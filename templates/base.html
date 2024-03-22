@@ -1,0 +1,34 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archive | {% block title %}{% endblock title %}</title>
+    <link rel="stylesheet" type="text/css" href="{% static '/css/style.css' %}">
+</head>
+<body>
+<header>
+    <nav>
+        <ul>
+            <li><a href="{% url 'home' %}" title="Recipes" aria-label="Link to view recipes">home</a></li>
+            {% if request.user.is_authenticated %}
+                <li><a href="{% url 'logout_page' %}" title="Logout">Logout</a></li>
+            {% else %}
+                <li><a href="{% url 'login_user' %}" title="Login" aria-label="Link to log in to the application">Login</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+</header>
+<div class="page_container">
+    {% block body_data %}{% endblock body_data %}
+</div>
+<footer></footer>
+    <section class="footer_bottom">
+        <span>Copyright &copy; 2024</span>
+    </section>
+</footer>
+</body>
+</html>
