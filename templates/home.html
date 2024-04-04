@@ -9,4 +9,22 @@
         <h1>Welcome to our Archive!</h1>
         <p>This is the home page of our Archive website.</p>
     </section>
+    
+    <h1>Media Files</h1>
+    
+    <div class="media-videos">
+        {% for item in media %}
+            {% if item.file_type == 'video' %}
+                <div class="video-wrapper">
+                    <video width="320" height="240" controls>
+                        <source src="{{ item.file.url }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    <span class="video-title">{{ item.title }}</span>
+                </div>
+
+            {% endif %}
+        {% endfor %}
+    </div>
+    
 {% endblock body_data %}
