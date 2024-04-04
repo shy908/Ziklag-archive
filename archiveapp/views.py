@@ -3,12 +3,18 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
+from django.core.files.storage import default_storage
 from django.db import IntegrityError
 from django.contrib import messages
+from .models import MediaFile
+from .forms import MediaFileForm
+
 
 @login_required(login_url='login_user')
 def home(request):
-    return render(request, 'home.html')
+    media = MediaFile.objects.filter(file_type='video').order_by('-uploaded_at')
+    print(media)  # Debugging print statement
+    return render(request, 'home.html', {'media': media})
 
 def signup(request):
     if request.method == 'POST':
@@ -52,3 +58,32 @@ def login_user(request):
 def logout_page(request):
     logout(request)
     return redirect('login_user')
+
+@login_required(login_url='login')
+def upload(request):
+    if request.method == 'POST':
+        form = MediaFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'File uploaded successfully!')
+            return redirect('home') 
+        else:
+            messages.error(request, 'Error uploading file.')
+    else:
+        form = MediaFileForm()
+    return render(request, 'upload.html', {'form': form})
+
+def audio(request):
+    media = MediaFile.objects.filter(file_type='audio').order_by('-uploaded_at')
+    print(media)
+    return render(request, 'audio.html', {'media': media})
+
+def images(request):
+    media = MediaFile.objects.filter(file_type='image').order_by('-uploaded_at')
+    print(media)
+    return render(request, 'images.html', {'media': media})
+
+def documents(request):
+    media = MediaFile.objects.filter(file_type='document').order_by('-uploaded_at')
+    print(media)  
+    return render(request, 'documents.html', {'media': media})
