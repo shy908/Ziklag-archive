@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Images
+{% endblock title %}
+
+{% block body_data %}
+    <h1>Media Files</h1>
+    
+    <div class="media-gallery">
+        {% for item in media %}
+            {% if item.file_type == 'image' %}
+                <div class="image-wrapper">
+                    <img src="{{ item.file.url }}" alt="{{ item.title }}">
+                    <span class="image-title">{{ item.title }}</span>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    
+{% endblock body_data %}
