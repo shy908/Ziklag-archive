@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Audio
+{% endblock title %}
+
+{% block body_data %}
+    <h1>Media Files</h1>
+    
+    <div class="media-gallery">
+        {% for item in media %}
+        {% if item.file_type == 'audio' %}
+        <div class="audio-wrapper">
+            <audio controls>
+                <source src="{{ item.file.url }}" type="audio/mp3">
+                Your browser does not support the audio element.
+            </audio>
+            <span class="audio-title">{{ item.title }}</span>
+        </div>
+    {% endif %}
+        {% endfor %}
+    </div>
+    
+{% endblock body_data %}
