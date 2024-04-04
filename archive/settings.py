@@ -83,7 +83,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'archivedb',
         'USER': 'root',
-        'PASSWORD': '',
+        'PASSWORD': 'innovative77',
         'HOST': 'localhost',
         'PORT': '3306',
     }
