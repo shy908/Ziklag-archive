@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Documents
+{% endblock title %}
+
+{% block body_data %}
+    <h1>Media Files</h1>
+    
+    <div class="media-document">
+        {% for item in media %}
+        {% if item.file_type == 'document' %}
+        <div class="document-wrapper">
+            <a href="{{ item.file.url }}" target="_blank">
+                Download {{ item.file_type }}
+            </a>
+            <span class="document-title">{{ item.title }}</span>
+        </div>
+    {% endif %}
+        {% endfor %}
+    </div>
+    
+{% endblock body_data %}
+
