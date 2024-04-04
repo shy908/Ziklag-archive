@@ -10,4 +10,13 @@ urlpatterns = [
 
     path('logout', views.logout_page, name="logout_page"),
 
+    path('upload', views.upload, name="upload"),
+
+    path('audio', views.audio, name="audio"),
+
+    path('images', views.images, name="images"),
+
+    path('documents', views.documents, name="documents"),
+
+
 ]
