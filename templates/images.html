@@ -13,6 +13,8 @@
                 <div class="image-wrapper">
                     <img src="{{ item.file.url }}" alt="{{ item.title }}">
                     <span class="image-title">{{ item.title }}</span>
+                        <a href="{% url 'edit_media' item.id %}" class="btn btn-primary">Edit</a>
+                        <a href="{% url 'delete_media' item.id %}" class="btn btn-danger">Delete</a>
                 </div>
             {% endif %}
         {% endfor %}
