@@ -15,6 +15,11 @@
                 Download {{ item.file_type }}
             </a>
             <span class="document-title">{{ item.title }}</span>
+            <!-- Edit Button -->
+            <a href="{% url 'edit_media' item.id %}" class="btn btn-primary">Edit</a>
+                    
+            <!-- Delete Button -->
+            <a href="{% url 'delete_media' item.id %}" class="btn btn-danger">Delete</a>
         </div>
     {% endif %}
         {% endfor %}
