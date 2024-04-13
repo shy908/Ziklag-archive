@@ -12,19 +12,30 @@
     
     <h1>Media Files</h1>
     
-    <div class="media-videos">
-        {% for item in media %}
-            {% if item.file_type == 'video' %}
-                <div class="video-wrapper">
-                    <video width="320" height="240" controls>
-                        <source src="{{ item.file.url }}" type="video/mp4">
-                        Your browser does not support the video tag.
-                    </video>
-                    <span class="video-title">{{ item.title }}</span>
-                </div>
-
-            {% endif %}
-        {% endfor %}
+    <!-- Parent Container for Centering -->
+    <div class="videos-container">
+        <div class="media-videos">
+            {% for item in media %}
+                {% if item.file_type == 'video' %}
+                    <div class="video-wrapper">
+                        <div class="video-frame">
+                            <video width="100%" height="auto" controls>
+                                <source src="{{ item.file.url }}" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                        <div class="media-info">
+                            <span class="video-title">{{ item.title }}</span>
+                        </div>
+                        <!-- Edit Button -->
+                        <a href="{% url 'edit_media' item.id %}" class="btn btn-primary">Edit</a>
+                        
+                        <!-- Delete Button -->
+                        <a href="{% url 'delete_media' item.id %}" class="btn btn-danger">Delete</a>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
     </div>
     
 {% endblock body_data %}
