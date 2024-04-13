@@ -7,28 +7,52 @@
     <meta name="keywords" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Archive | {% block title %}{% endblock title %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" type="text/css" href="{% static '/css/style.css' %}">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
 <header>
-    <nav>
+    <div class="toggle-btn" onclick="myFunc();">
+        <label id="icon">
+            <i class="fas fa-bars"></i>
+        </label>
+    </div>
+    <label class="logo"><a href="{% url 'home' %}">Archive</a></label>  
+    <form action="{% url 'search_media' %}" method="GET" class="search-form">
+        {% csrf_token %}
+        <input type="text" name="q"  id="search-input" placeholder="Search..." class="search-input">
+        <button type="submit" class="search-button"><i class="fas fa-search"></i></button>
+    </form>  
+    <nav id="nav">
         <ul>
-            <li><a href="{% url 'home' %}" title="Recipes" aria-label="Link to view recipes">home</a></li>
+            <li><a href="{% url 'home' %}" title="home" ><i class="fas fa-home"></i>Home</a></li>
+            <li><a href="{% url 'upload' %}" title="upload" ><i class="fas fa-upload"></i>Upload</a></li>
+            <li><a href="{% url 'audio' %}" title="audios" ><i class="fas fa-volume-up"></i>Audios</a></li>
+            <li><a href="{% url 'images' %}" title="images" ><i class="fas fa-images"></i>Images</a></li>
+            <li><a href="{% url 'documents' %}" title="document" ><i class="fas fa-file-alt"></i>Documents</a></li>
             {% if request.user.is_authenticated %}
-                <li><a href="{% url 'logout_page' %}" title="Logout">Logout</a></li>
+                <li><a href="{% url 'logout_page' %}" title="Logout"><i class="fas fa-sign-out-alt"></i></a></li>
             {% else %}
-                <li><a href="{% url 'login_user' %}" title="Login" aria-label="Link to log in to the application">Login</a></li>
+                <li><a href="{% url 'login_user' %}" title="Login" aria-label="Link to log in to the application"><i class="fas fa-sign-in-alt"></i></a></li>
             {% endif %}
         </ul>
     </nav>
 </header>
+
+<script src="{% static 'js/script.js'%}"></script>
+
 <div class="page_container">
     {% block body_data %}{% endblock body_data %}
 </div>
-<footer></footer>
+
+<footer>
     <section class="footer_bottom">
         <span>Copyright &copy; 2024</span>
     </section>
 </footer>
+
 </body>
 </html>
