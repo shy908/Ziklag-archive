@@ -16,6 +16,8 @@
                 Your browser does not support the audio element.
             </audio>
             <span class="audio-title">{{ item.title }}</span>
+            <a href="{% url 'edit_media' item.id %}" class="btn btn-primary">Edit</a>
+            <a href="{% url 'delete_media' item.id %}" class="btn btn-danger">Delete</a>
         </div>
     {% endif %}
         {% endfor %}
