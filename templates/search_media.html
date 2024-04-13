@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Search Results
+{% endblock title %}
+
+{% block body_data %}
+    <section>
+        <h1>Search Results for "{{ query }}"</h1>
+    </section>
+
+    <!-- Display Search Results -->
+    <div class="media-files">
+        {% if media %}
+            {% for item in media %}
+                <div class="media-item">
+                    {% if item.file_type == 'video' %}
+                        <video width="320" height="240" controls>
+                            <source src="{{ item.file.url }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    {% elif item.file_type == 'audio' %}
+                        <audio controls>
+                            <source src="{{ item.file.url }}" type="audio/mp3">
+                            Your browser does not support the audio tag.
+                        </audio>
+                    {% elif item.file_type == 'image' %}
+                        <img src="{{ item.file.url }}" alt="{{ item.title }}" width="320" height="240">
+                    {% elif item.file_type == 'document' %}
+                        <a href="{{ item.file.url }}" target="_blank">{{ item.title }}</a>
+                    {% endif %}
+                    
+                    <span class="media-title">{{ item.title }}</span>
+                    
+                    <!-- Edit Button -->
+                    <a href="{% url 'edit_media' item.id %}" class="btn btn-primary">Edit</a>
+                    
+                    <!-- Delete Button -->
+                    <a href="{% url 'delete_media' item.id %}" class="btn btn-danger">Delete</a>
+                </div>
+            {% endfor %}
+        {% else %}
+            <h2>No results found for "{{ query }}"</h2>
+        {% endif %}
+    </div>
+
+{% endblock body_data %}
