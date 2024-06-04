@@ -11,6 +11,7 @@ from django.contrib import messages
 from .models import MediaFile
 from .forms import MediaFileForm, MediaFileEditForm
 from django.http import JsonResponse
+from django.template.loader import render_to_string
 
 
 @login_required(login_url='login_user')
@@ -62,7 +63,16 @@ def logout_page(request):
     logout(request)
     return redirect('login_user')
 
-@login_required(login_url='login')
+def play_video(request, video_id):
+    video = get_object_or_404(MediaFile, pk=video_id)
+    
+    # Find the index of the current video in the list of related videos
+    related_videos = MediaFile.objects.filter(file_type='video').exclude(pk=video_id).order_by('-uploaded_at').distinct()
+    
+    return render(request, 'video_player.html', {'video': video, 'related_videos': related_videos})
+
+
+@login_required(login_url='login_user')
 def upload(request):
     if request.method == 'POST':
         form = MediaFileForm(request.POST, request.FILES)
@@ -76,7 +86,7 @@ def upload(request):
         form = MediaFileForm()
     return render(request, 'upload.html', {'form': form})
 
-@login_required(login_url='login')
+@login_required(login_url='login_user')
 def edit_media(request, media_id):
     try:
         media_item = MediaFile.objects.get(pk=media_id)
@@ -112,25 +122,39 @@ def delete_media(request, media_id):
 
     return redirect('home')
 
+@login_required(login_url='login_user')
 def search_media(request):
     query = request.GET.get('q')
+    
     if query:
-        media = MediaFile.objects.filter(Q(title__icontains=query) | Q(description__icontains=query)).order_by('-uploaded_at')
+        if len(query) < 4:
+            media = MediaFile.objects.none() 
+        else:
+            media = MediaFile.objects.filter(
+                Q(title__icontains=query) | Q(description__icontains=query)
+            ).order_by('-uploaded_at')
     else:
-        media = MediaFile.objects.none()
+        media = MediaFile.objects.all().order_by('-uploaded_at')
+    
+    if request.headers.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
+        html = render_to_string('media_partial.html', {'media': media})
+        return HttpResponse(html)
+    
     return render(request, 'search_media.html', {'media': media, 'query': query})
 
-def autocomplete_search(request):
-    query = request.GET.get('q')
-    suggestions = []
+def search_suggestions(request):
+    query = request.GET.get('term', '')
+    
     if query:
-        media = MediaFile.objects.filter(
-            Q(file_name__icontains=query) | 
-            Q(description__icontains=query) |
-            Q(file_type__icontains=query)
-        ).order_by('-uploaded_at').values_list('title', flat=True)[:10]  # Limit to 10 suggestions
-        suggestions = list(media)
-    return JsonResponse({'suggestions': suggestions})
+        suggestions = MediaFile.objects.filter(
+            Q(title__icontains=query) | Q(description__icontains=query)
+        ).values_list('title', flat=True)[:10]  # 10 suggestions
+        
+        suggestions = list(suggestions)
+    else:
+        suggestions = []
+    
+    return JsonResponse(suggestions, safe=False)
 
 def audio(request):
     media = MediaFile.objects.filter(file_type='audio').order_by('-uploaded_at')
