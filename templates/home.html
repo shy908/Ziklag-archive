@@ -5,37 +5,224 @@
 {% endblock title %}
 
 {% block body_data %}
-    <section>
-        <h1>Welcome to our Archive!</h1>
-        <p>This is the home page of our Archive website.</p>
-    </section>
+<style>
+    body {
+        background-color: #466bb49d;
+    }
+    /* CSS styles for video gallery */
+    .videos-container {
+        display: flex;
+        justify-content: center;
+        padding: 10px;
+    }
     
-    <h1>Media Files</h1>
+    .media-videos {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        grid-auto-rows: minmax(250px, 1fr);
+        grid-gap: 16px;
+    }
     
-    <!-- Parent Container for Centering -->
-    <div class="videos-container">
-        <div class="media-videos">
-            {% for item in media %}
-                {% if item.file_type == 'video' %}
-                    <div class="video-wrapper">
+    .video-wrapper {
+        margin-bottom: 30px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .video-frame {
+        position: relative;
+        padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    }
+    
+    .video-frame video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 12px;
+        object-fit: cover;
+    }
+    
+    .media-info {
+        padding: 10px;
+        background-color: #f4f4f4;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .video-title {
+        font-size: 22px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        flex-grow: 1; /* Allow title to take available space */
+    }
+
+    .ellipsis-icon {
+        margin-left: 10px;
+        cursor: pointer;
+        flex-shrink: 0; /* Prevent ellipsis icon from shrinking */
+    }
+
+    .fa-ellipsis-v {
+        color: #222;
+    }
+
+    /* Responsive Layout */
+    @media (min-width: 992px) {
+        .media-videos {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+    }
+    
+    @media (max-width: 991px) and (min-width: 768px) {
+        .media-videos {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+    }
+    
+    @media (max-width: 767px) {
+        .media-videos {
+            grid-template-columns: repeat(1, 1fr); /* one column layout */
+            gap: 10px;
+        }
+
+        .video-title {
+            font-size: 18px; /* Adjust font size for small screens */
+        }
+    }
+    
+    .video-wrapper:hover {
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        transform: scale(1.05);
+    }
+    
+    .video-frame {
+        height: 0;
+        padding-bottom: 56.25%; /* 16:9 aspect ratio (divide 9 by 16 = 0.5625) */
+    }
+
+    .channel-name {
+        color: #222;
+        background-color: #f4f4f4;
+    }
+    
+    .video-duration {
+        position: absolute;
+        bottom: 8px;
+        right: 10px;
+        background-color: #222;
+        color: rgba(255, 255, 255, 0.8);
+        padding: 5px;
+        border-radius: 5px;
+        font-size: 12px;
+        z-index: 1;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    .media-action {
+        position: absolute;
+        right: 0;
+        top: 0;
+        background-color: #fff;
+        border: 1px solid #ddd;
+        padding: 10px;
+        box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+        z-index: 10;
+    }
+
+    .media-action a {
+        display: block;
+        margin: 5px 0;
+        text-align: center;
+    }
+</style>
+
+<div class="videos-container">
+    <div class="media-videos">
+        {% for item in media %}
+            {% if item.file_type == 'video' %}
+                <div class="video-wrapper">
+                    <a href="{% url 'play_video' item.id %}">
                         <div class="video-frame">
-                            <video width="100%" height="auto" controls>
+                            <video>
                                 <source src="{{ item.file.url }}" type="video/mp4">
                                 Your browser does not support the video tag.
                             </video>
+                            <span class="video-duration"></span>
                         </div>
-                        <div class="media-info">
-                            <span class="video-title">{{ item.title }}</span>
+                    </a>
+                    <div class="media-info">
+                        <span class="video-title">{{ item.title }}</span>
+                        <div class="ellipsis-icon">
+                            <i class="fa fa-ellipsis-v toggle-action"></i>
+                            <div class="media-action hidden">
+                                <a href="{% url 'edit_media' item.id %}" class="btn btn-primary">Edit</a>
+                                <a href="{% url 'delete_media' item.id %}" class="btn btn-danger">Delete</a>
+                                <a href="{{ item.file.url }}" download="{{ item.title }}" class="btn btn-secondary">Download</a>
+                            </div>
                         </div>
-                        <!-- Edit Button -->
-                        <a href="{% url 'edit_media' item.id %}" class="btn btn-primary">Edit</a>
-                        
-                        <!-- Delete Button -->
-                        <a href="{% url 'delete_media' item.id %}" class="btn btn-danger">Delete</a>
                     </div>
-                {% endif %}
-            {% endfor %}
-        </div>
+                    <div class="channel-name">Manue</div>
+                </div>
+            {% endif %}
+        {% endfor %}
     </div>
-    
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    var videos = document.querySelectorAll("video");
+    videos.forEach(function(video) {
+        video.onloadedmetadata = function() {
+            var duration = video.duration;
+            var minutes = Math.floor(duration / 60);
+            var seconds = Math.floor(duration % 60);
+            var durationString = minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+            var durationElement = video.parentElement.querySelector(".video-duration");
+            durationElement.textContent = durationString;
+        };
+    });
+
+    // Toggle action menu visibility
+    document.querySelectorAll('.fa-ellipsis-v').forEach(function(ellipsis) {
+        ellipsis.addEventListener('click', function(event) {
+            event.stopPropagation();
+            var mediaAction = this.nextElementSibling;
+            document.querySelectorAll('.media-action').forEach(function(action) {
+                if (action !== mediaAction) {
+                    action.classList.add('hidden');
+                }
+            });
+            mediaAction.classList.toggle('hidden');
+        });
+    });
+
+    // Hide action menu when clicking outside
+    document.addEventListener('click', function() {
+        document.querySelectorAll('.media-action').forEach(function(action) {
+            action.classList.add('hidden');
+        });
+    });
+
+    // Hide action menu when clicking on a different video
+    document.querySelectorAll('.video-wrapper').forEach(function(wrapper) {
+        wrapper.addEventListener('click', function() {
+            document.querySelectorAll('.media-action').forEach(function(action) {
+                action.classList.add('hidden');
+            });
+        });
+    });
+});
+</script>
+
 {% endblock body_data %}
