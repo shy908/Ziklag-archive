@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {{ video.title }}
+{% endblock title %}
+
+{% block body_data %}
+<style>
+    .video-container {
+        position: relative;
+        max-width: 800px;
+        margin: 0 auto;
+        background-color: #000;
+        padding: 20px;
+        border-radius: 8px;
+    }
+
+    .video-container video {
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+    }
+
+    .video-details {
+        margin-top: 10px;
+        color: #fff;
+        display: flex;
+        align-items: center;
+    }
+
+    .vid-title {
+        font-size: 24px;
+        font-weight: bold;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        flex-grow: 1;
+        margin-right: 10px;
+    }
+
+    .fa-ellipsis-v {
+        color: #e1e1e1;
+        cursor: pointer;
+    }
+    .hidden {
+        display: none;
+    }
+
+    .media-action {
+        position: absolute;
+        right: 0;
+        top: 30px;
+        background-color: #fff;
+        border: 1px solid #ddd;
+        padding: 10px;
+        box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+        z-index: 10;
+    }
+
+    .media-action a {
+        display: block;
+        margin: 5px 0;
+        text-align: center;
+    }
+
+    .related-videos-container {
+        max-width: 800px;
+        margin: 20px auto 0;
+    }
+
+    .related-videos {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .related-video {
+        flex: 1 1 calc(33.333% - 10px);
+        cursor: pointer;
+        position: relative;
+    }
+
+    .related-video video {
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+    }
+
+    .related-video .video-details {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.5);
+        color: #fff;
+        padding: 5px 10px;
+        border-bottom-left-radius: 8px;
+        border-bottom-right-radius: 8px;
+    }
+
+    .related-video .vid-title {
+        font-size: 14px;
+        font-weight: bold;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>
+
+<div class="video-container">
+    <video id="main-video" controls>
+        <source src="{{ video.file.url }}" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+   
+    <div class="video-details">
+        <h1 class="vid-title">{{ video.title }}</h1>
+        <div class="ellipsis-icon">
+            <i class="fa fa-ellipsis-v toggle-action"></i>
+            <div class="media-action hidden">
+                <a href="{% url 'edit_media' video.id %}" class="btn btn-primary">Edit</a>
+                <a href="{% url 'delete_media' video.id %}" class="btn btn-danger">Delete</a>
+                <a href="{{ item.file.url }}" download="{{ item.title }}" class="btn btn-secondary">Download</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="related-videos-container">
+    <div class="related-videos clearfix">
+        {% for related_video in related_videos %}
+            <div class="video-container related-video" id="related-video-{{ related_video.id }}">
+                <video data-src="{{ related_video.file.url }}">
+                    <source src="{{ related_video.file.url }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                <div class="video-details">
+                    <p class="vid-title">{{ related_video.title }}</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const mainVideo = document.getElementById('main-video');
+    const vidTitle = document.querySelector('.vid-title');
+
+    let currentVideoTitle = "{{ video.title }}";
+    function updateVideoTitle(title) {
+        vidTitle.textContent = title;
+    }
+
+    document.querySelectorAll('.related-video').forEach(function(relatedVideo) {
+        relatedVideo.addEventListener('click', function() {
+            const videoSrc = this.querySelector('video').getAttribute('data-src');
+            currentVideoTitle = this.querySelector('p').textContent;
+            mainVideo.src = videoSrc;
+            mainVideo.play();
+            updateVideoTitle(currentVideoTitle);
+        });
+    });
+
+    // Toggle action menu visibility
+    document.querySelectorAll('.fa-ellipsis-v').forEach(function(ellipsis) {
+        ellipsis.addEventListener('click', function(event) {
+            event.stopPropagation();
+            document.querySelectorAll('.media-action').forEach(function(actionMenu) {
+                actionMenu.classList.add('hidden');
+            });
+            this.nextElementSibling.classList.toggle('hidden');
+        });
+    });
+
+    // Hide action menu when clicking outside
+    document.addEventListener('click', function() {
+        document.querySelectorAll('.media-action').forEach(function(actionMenu) {
+            actionMenu.classList.add('hidden');
+        });
+    });
+
+    // Prevent hiding when clicking on the action menu
+    document.querySelectorAll('.media-action').forEach(function(actionMenu) {
+        actionMenu.addEventListener('click', function(event) {
+            event.stopPropagation();
+        });
+    });
+});
+</script>
+{% endblock body_data %}
