@@ -18,7 +18,7 @@ urlpatterns = [
 
     path('search_media', views.search_media, name="search_media"),
 
-    path('autocomplete-search/', views.autocomplete_search, name='autocomplete_search'),
+    path('search_suggestions/', views.search_suggestions, name='search_suggestions'),
 
     path('audio', views.audio, name="audio"),
 
@@ -26,5 +26,6 @@ urlpatterns = [
 
     path('documents', views.documents, name="documents"),
 
+    path('play_video/<int:video_id>/', views.play_video, name='play_video')
 
 ]
