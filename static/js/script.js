@@ -1,64 +1,69 @@
-function myFunc() {
-    var navbar = document.getElementById('nav');
-    navbar.classList.toggle('show');
-    
-    // Check if nav is visible
-    if(navbar.classList.contains('show')) {
-        //to add event listener to close nav when clicking outside
-        document.addEventListener('click', closeNavOnClickOutside);
-    } else {
-        // to remove event listener to close nav when clicking outside
-        document.removeEventListener('click', closeNavOnClickOutside);
+function validateSearch() {
+    var query = document.getElementById('search-input').value.trim();
+    if (query === '') {
+        return false; // Prevent form submission
     }
+    return true; // Allow form submission
 }
 
-function closeNavOnClickOutside(event) {
-    var navbar = document.getElementById('nav');
-    var toggleBtn = document.querySelector('.toggle-btn');
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.querySelector('#search-input');
+    const searchButton = document.querySelector('.search-button'); 
 
-    if (!navbar.contains(event.target) && !toggleBtn.contains(event.target)) {
-        navbar.classList.remove('show');
-        document.removeEventListener('click', closeNavOnClickOutside);
-    }
-}
-$(document).ready(function(){
-    $('#search-form').on('submit', function(event){
-        event.preventDefault();
-        var query = $(this).find('input[name="q"]').val();
-        $.ajax({
-            url: $(this).attr('action'),
-            type: 'GET',
-            data: { 'q': query },
-            success: function(response){
-                $('#search-results').html(response);
-            },
-            error: function(error){
-                console.log(error);
+    searchButton.addEventListener('click', function(event) {
+        if (window.innerWidth <= 768) { 
+            if (searchInput.style.display === 'none' || searchInput.style.display === '') {
+                searchInput.style.display = 'block'; 
+                searchInput.focus(); 
+            } else {
+                searchInput.style.display = 'none'; 
             }
+        }
+    });
+
+    searchInput.addEventListener('keyup', function() {
+        const query = searchInput.value.trim();
+        
+        fetch(`/search/?q=${query}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        })
+        .then(response => response.text())
+        .then(data => {
+            const mediaContainer = document.querySelector('#media-container');
+            mediaContainer.innerHTML = data;
+        })
+        .catch(error => {
+            console.error('Error fetching search results:', error);
         });
     });
 });
-$(document).ready(function(){
-    console.log("Autocomplete script loaded");  
 
-    $("#search-input").autocomplete({
-        source: function(request, response) {
-            console.log("Autocomplete request for:", request.term);  
-            
+$(document).ready(function() {
+    $('#search-input').keyup(function() {
+        let query = $(this).val();
+        
+        if (query.length >= 3) {  
             $.ajax({
-                url: "{% url 'autocomplete_search' %}",
-                type: 'GET',
-                data: { 'q': request.term },
+                url: '/search-suggestions/',
+                data: {
+                    'term': query
+                },
                 dataType: 'json',
                 success: function(data) {
-                    console.log("Received suggestions:", data.suggestions);  
-                    response(data.suggestions);
+                    let suggestions = data.map(item => `<li>${item}</li>`).join('');
+                    $('#search-suggestions').html(suggestions).show();
                 },
-                error: function(error){
-                    console.log("Error:", error);
+                error: function(error) {
+                    console.log('Error fetching suggestions:', error);
                 }
             });
-        },
-        minLength: 2
+        } else {
+            $('#search-suggestions').hide();
+        }
     });
+    
 });
+
