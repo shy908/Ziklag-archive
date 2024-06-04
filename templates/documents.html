@@ -1,29 +1,114 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block title %}
     Documents
 {% endblock title %}
 
 {% block body_data %}
-    <h1>Media Files</h1>
-    
-    <div class="media-document">
-        {% for item in media %}
-        {% if item.file_type == 'document' %}
-        <div class="document-wrapper">
-            <a href="{{ item.file.url }}" target="_blank">
-                Download {{ item.file_type }}
-            </a>
-            <span class="document-title">{{ item.title }}</span>
-            <!-- Edit Button -->
-            <a href="{% url 'edit_media' item.id %}" class="btn btn-primary">Edit</a>
-                    
-            <!-- Delete Button -->
-            <a href="{% url 'delete_media' item.id %}" class="btn btn-danger">Delete</a>
-        </div>
-    {% endif %}
-        {% endfor %}
-    </div>
-    
-{% endblock body_data %}
+<style>
+body {
+    background-image: linear-gradient(#6b3636, #6c6cff);
+    background-attachment: fixed;
+    background-size: cover;
+}
 
+.hidden {
+    display: none;
+}
+
+.media-document {
+    position: relative;
+    margin-top: 22px;
+}
+
+.media-action {
+    position: absolute;
+    background: #fff;
+    border: 1px solid #ccc;
+    padding: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    right: 0;
+    top: 0;
+}
+
+.media-action a {
+    display: block;
+    margin: 5px 0;
+}
+
+.document-wrapper {
+    margin-bottom: 20px;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+hr {
+    width: 100%;
+    margin-top: 4px !important;
+    margin-bottom: 6px !important;
+}
+
+.document-wrapper img {
+    width: 30px;
+    height: 30px;
+    margin: 5px;
+    border-radius: 5px;
+}
+
+.document-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+    color: #fff;
+}
+
+.ellipsis-icon {
+    margin-left: auto;
+    color: #fff;
+}
+
+</style>
+
+
+<div class="media-document">
+    {% for item in media %}
+    {% if item.file_type == 'document' %}
+    <div class="document-wrapper">
+        <img src="{% static 'img/doc-icon.jpg' %}" alt="icon" class="doc-icon">
+        <a href="{{ item.file.url }}" target="_blank" class="document-link">
+            <span class="document-title">{{ item.title }}</span>
+        </a>
+        <i class="fa fa-ellipsis-v ellipsis-icon toggle-action"></i>
+        <div class="media-action hidden">
+            <a href="{% url 'edit_media' item.id %}" class="btn btn-primary">Edit</a>
+            <a href="{% url 'delete_media' item.id %}" class="btn btn-danger">Delete</a>
+            <a href="{{ item.file.url }}" download="{{ item.title }}" class="btn btn-secondary">Download</a>
+        </div>
+    </div>
+    <hr>
+    {% endif %}
+    {% endfor %}
+</div>
+
+<script>
+    // Toggle action menu visibility
+    $(document).on('click', '.fa-ellipsis-v', function(event) {
+        event.stopPropagation();
+        $('.media-action').not($(this).siblings('.media-action')).addClass('hidden');
+        $(this).siblings('.media-action').toggleClass('hidden');
+    });
+
+    // Hide action menu when clicking outside
+    $(document).on('click', function() {
+        $('.media-action').addClass('hidden');
+    });
+
+    // Hide action menu when clicking on a different element
+    $(document).on('click', '.document-wrapper', function(event) {
+        event.stopPropagation();
+    });
+</script>
+
+{% endblock body_data %}
