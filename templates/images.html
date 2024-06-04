@@ -5,19 +5,230 @@
 {% endblock title %}
 
 {% block body_data %}
-    <h1>Media Files</h1>
-    
-    <div class="media-gallery">
-        {% for item in media %}
-            {% if item.file_type == 'image' %}
-                <div class="image-wrapper">
-                    <img src="{{ item.file.url }}" alt="{{ item.title }}">
+<style>
+
+/* Grid layout for media gallery */
+.media-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-gap: 16px;
+    position: relative; /* Position for absolute buttons */
+}
+
+/* Styling for individual image wrapper */
+.media-gallery .image-wrapper {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    height: 250px; /* fixed height for the image wrapper */
+}
+
+.media-gallery .image-wrapper:hover {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    transform: scale(1.05);
+}
+
+/* Style for images within the gallery */
+.media-gallery .image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Cover the entire area of the container */
+    cursor: pointer;
+}
+
+/* Style for title and buttons container */
+.media-gallery .image-wrapper .title-container {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 5px 10px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+}
+
+/* Style for title */
+.media-gallery .image-wrapper .title-container .image-title {
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+/* Style for ellipsis container */
+.media-gallery .image-wrapper .title-container .ellipsis-container {
+    position: relative;
+    display: inline-block;
+}
+
+/* Style for ellipsis icon */
+.media-gallery .image-wrapper .title-container .ellipsis-container .toggle-action {
+    cursor: pointer;
+}
+
+/* Position media action container */
+.media-gallery .image-wrapper .media-action {
+    display: none;
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 5px;
+    border-radius: 5px;
+}
+
+/* Show media action container on image wrapper hover */
+.media-gallery .image-wrapper:hover .media-action {
+    display: block;
+}
+
+/* Style for buttons */
+.media-gallery .image-wrapper .media-action a {
+    display: block;
+    margin-top: 5px;
+}
+
+/* Modal styles */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 9999; /* Sit on top */
+    padding-top: 100px; /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0, 0, 0, 0.9);
+}
+
+/* Modal Content */
+.modal-content {
+    margin: auto;
+    display: block;
+    width: 80%;
+    max-width: 800px;
+}
+
+/* Caption of Modal Image */
+#caption {
+    margin: auto;
+    display: block;
+    width: 80%;
+    max-width: 700px;
+    text-align: center;
+    color: #ccc;
+    padding: 10px 0;
+    height: 150px;
+}
+
+/* Add Animation */
+.modal-content,
+#caption {
+    animation-name: zoom;
+    animation-duration: 0.6s;
+}
+
+@keyframes zoom {
+    from {
+        transform: scale(0)
+    }
+
+    to {
+        transform: scale(1)
+    }
+}
+
+/* The Close Button */
+.close {
+    position: absolute;
+    top: 15px;
+    right: 35px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.close:hover,
+.close:focus {
+    color: #bbb;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* 100% Image Width on Smaller Screens */
+@media only screen and (max-width: 700px) {
+    .modal-content {
+        width: 100%;
+    }
+}
+
+
+</style>
+<!-- HTML -->
+<div class="media-gallery">
+    {% for item in media %}
+        {% if item.file_type == 'image' %}
+            <div class="image-wrapper">
+                <img src="{{ item.file.url }}" alt="{{ item.title }}" onclick="openModal('{{ item.file.url }}', '{{ item.title }}')">
+                <div class="title-container">
                     <span class="image-title">{{ item.title }}</span>
-                        <a href="{% url 'edit_media' item.id %}" class="btn btn-primary">Edit</a>
-                        <a href="{% url 'delete_media' item.id %}" class="btn btn-danger">Delete</a>
+                    <div class="ellipsis-container">
+                        <i class="fa fa-ellipsis-v toggle-action"></i>
+                          <div class="media-action hidden">
+                            <a href="{% url 'edit_media' item.id %}" class="btn btn-primary">Edit</a>
+                            <a href="{% url 'delete_media' item.id %}" class="btn btn-danger">Delete</a>
+                            <a href="{{ item.file.url }}" download="{{ item.title }}" class="btn btn-secondary">Download</a>
+                        </div>
+                    </div>
                 </div>
-            {% endif %}
-        {% endfor %}
-    </div>
-    
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>
+
+
+<!-- The Modal -->
+<div id="myModal" class="modal">
+  <span class="close" onclick="closeModal()">&times;</span>
+  <img class="modal-content" id="img01">
+  <div id="caption"></div>
+</div>
+
+<script>
+    // Toggle action menu visibility
+    $(document).on('click', '.fa-ellipsis-v', function(event) {
+        event.stopPropagation();
+        $('.media-action').not($(this).siblings('.media-action')).addClass('hidden');
+        $(this).siblings('.media-action').toggleClass('hidden');
+    });
+
+    // Hide action menu when clicking outside
+    $(document).on('click', function() {
+        $('.media-action').addClass('hidden');
+    });
+
+    // Hide action menu when clicking on a different audio
+    $(document).on('click', '.audio-name', function() {
+        $('.media-action').addClass('hidden');
+    });
+
+    function openModal(imageUrl, title) {
+        var modal = document.getElementById("myModal");
+        var modalImg = document.getElementById("img01");
+        var captionText = document.getElementById("caption");
+        modal.style.display = "block";
+        modalImg.src = imageUrl;
+        captionText.innerHTML = title;
+    }
+
+    function closeModal() {
+        document.getElementById("myModal").style.display = "none";
+    }
+
+   
+</script>
+
 {% endblock body_data %}
