@@ -1,26 +1,443 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}
     Audio
 {% endblock title %}
 
 {% block body_data %}
-    <h1>Media Files</h1>
+<style>
+body {
+    background-image: linear-gradient(#6b3636, #6c6cff);
+    background-attachment: fixed;
+    background-size: cover;
+    background-repeat: no-repeat;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.audio-list-container {
+    max-height: calc(100vh - 150px);
+    overflow-y: auto;
+    width: 100%;
+    padding-top: 100px;
+    padding-bottom: 20px;
+}
+
+.music-player {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    overflow: hidden;
+}
+
+.audio-name {
+    color: #fff;
+    position: relative;
+    margin-top: 10px;
+    min-height: 30px;
+    align-self: flex-start;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.audio-name h6 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    margin: 0;
+    padding: 5px 0;
+    flex-grow: 1;
+}
+
+.audio-name .music-icon {
+    margin-right: 10px;
+    height: 24px;
+    width: auto;
+}
+
+.hidden {
+    display: none;
+}
+
+.media-action {
+    position: absolute;
+    right: 0;
+    top: 30px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    padding: 10px;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+    z-index: 10;
+}
+
+.media-action a {
+    display: block;
+    margin: 5px 0;
+    text-align: center;
+}
+
+.fa-ellipsis-v {
+    margin-right: 10px;
+    color: #e1e1e1;
+    cursor: pointer;
+}
+
+.audio-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+audio {
+    width: 100%;
+}
+
+hr {
+    width: 100%;
+    margin-top: 4px !important;
+    margin-bottom: 6px !important;
+}
+
+audio {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .audio-name h6 {
+        max-width: 80%;
+    }
+
+    .audio-name .music-icon {
+        height: 20px;
+    }
+}
+
+.music-play {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    width: 100%;
+    padding: 20px 0;
+}
+
+.play-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-grow: 1;
+    width: 100%;
+    max-width: 600px;
+}
+
+.song-info {
+    display: flex;
+    align-items: center;
+    width: 150px;
+    margin: 0;
+}
+
+.play-image img {
+    width: 30px;
+    height: 30px;
+    margin: 5px;
+    border-radius: 5px;
+}
+
+.song-name {
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.song-name h6 {
+    margin: 0;
+    font-size: 15px;
+    color: #fff;
+}
+
+.play-icon {
+    display: flex;
+    align-items: center;
+}
+
+.play-icon .fa {
+    width: 30px;
+    height: 30px;
+    font-size: 13px;
+    color: #000;
+    border-radius: 40px;
+    background-color: #e1e1e1;
+    margin: 15px 13px 0;
+    padding: 9px 11px;
+    cursor: pointer;
+}
+
+.music-progress {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.progress-bar {
+    width: 100%;
+}
+
+.current-time {
+    order: 0;
+    margin-right: 260px;
+}
+
+.total-duration {
+    order: 1;
+}
+
+.custom-hr {
+    border: 1px solid #fff;
+    margin: 10px 0;
+    width: 100%;
+    max-width: 600px;
+}
+
+.audio-time {
+    display: flex;
+    justify-content: space-between;
+    color: #fff;
+    margin-top: 2px;
+}
+
+@keyframes revealText {
+    0% {
+        transform: translateX(100%);
+    }
+    100% {
+        transform: translateX(-100%);
+    }
+}
+
+.song-name h6 {
+    animation: revealText 10s linear infinite;
+}
+</style>
     
-    <div class="media-gallery">
+<div class="music-player">
+
+    <div class="audio-list-container">
         {% for item in media %}
-        {% if item.file_type == 'audio' %}
-        <div class="audio-wrapper">
-            <audio controls>
-                <source src="{{ item.file.url }}" type="audio/mp3">
-                Your browser does not support the audio element.
-            </audio>
-            <span class="audio-title">{{ item.title }}</span>
-            <a href="{% url 'edit_media' item.id %}" class="btn btn-primary">Edit</a>
-            <a href="{% url 'delete_media' item.id %}" class="btn btn-danger">Delete</a>
-        </div>
-    {% endif %}
+            {% if item.file_type == 'audio' %}
+            <div class="audio-name" data-media-id="{{ item.id }}">
+                <img src="{% static 'img/music-player-icon.jpg' %}" alt="Music Player Icon" class="music-icon">
+                <h6>{{ item.title }}</h6>
+                <i class="fa fa-ellipsis-v toggle-action"></i>
+                <div class="media-action hidden">
+                    <a href="{% url 'edit_media' item.id %}" class="btn btn-primary">Edit</a>
+                    <a href="{% url 'delete_media' item.id %}" class="btn btn-danger">Delete</a>
+                    <a href="{{ item.file.url }}" download="{{ item.title }}" class="btn btn-secondary">Download</a>
+                </div>
+            </div>            
+                
+                <div class="audio-wrapper">
+                    <audio controls>
+                        <source src="{{ item.file.url }}" type="audio/mp3">
+                        Your browser does not support the audio element.
+                    </audio>
+                </div>
+                <hr>
+            {% endif %}
         {% endfor %}
     </div>
+    <hr class="custom-hr">
+    <div class="music-play">
+        <div class="play-controls">
+            <div class="song-info">
+                <div class="play-image">
+                    <img src="{% static 'img/music-player-icon.jpg' %}" alt="audio-playing">
+                </div>
+                <div class="song-name">
+                    <h6>{{ media.title }}</h6>
+                </div>
+            </div>
+            <div class="play-icon">
+                <i class="fa fa-step-backward"></i>
+                <i class="fa fa-play"></i>
+                <i class="fa fa-step-forward"></i>
+            </div>
+        </div>
+        <div class="music-progress">
+            <input type="range" id="progress-bar" class="progress-bar" min="0" max="100" value="0">
+        </div>      
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    // Select the progress bar element
+    var progressBar = document.getElementById("progress-bar");
     
+    // Function to toggle play/pause of audio
+    function togglePlay(audioElement, playIcon) {
+        if (audioElement.paused) {
+            audioElement.play();
+            playIcon.removeClass('fa-play').addClass('fa-pause');
+        } else {
+            audioElement.pause();
+            playIcon.removeClass('fa-pause').addClass('fa-play');
+        }
+    }
+
+    var currentAudio = null; // Variable to keep track of the currently playing audio
+    var currentMediaId = localStorage.getItem('currentMediaId'); //to  retrieve the currently playing media ID from localStorage
+
+    // Apply initial highlight based on the stored media ID
+    if (currentMediaId) {
+        var currentTitle = localStorage.getItem('currentTitle'); // Retrieve the currently playing media title from localStorage
+        $('.audio-name[data-media-id="' + currentMediaId + '"]').addClass('playing').find('h6').css('color', '#FFA500');
+        $('.song-name h6').text(currentTitle); // Display the currently playing media title
+    }
+
+    // Event delegation for audio-name click
+    $(document).on('click', '.audio-name', function() {
+        var audioElement = $(this).next('.audio-wrapper').find('audio')[0];
+        var titleElement = $(this).find('h6');
+        var playIcon = $('.play-icon .fa-play');
+
+        // Remove 'playing' class and reset color from all other songs
+        $('.audio-name').not(this).removeClass('playing').find('h6').css('color', '#FFFFFF');
+
+        // Pause the current audio if it's not the same as the clicked audio
+        if (currentAudio && currentAudio !== audioElement) {
+            currentAudio.pause();
+            $(currentAudio).parent().prev('.audio-name').find('h6').css('color', '#FFFFFF');
+            playIcon.removeClass('fa-pause').addClass('fa-play');
+        }
+
+        // Check if the clicked audio is the same as the currently playing audio
+        if (currentMediaId === $(this).data('media-id')) {
+            togglePlay(audioElement, playIcon);
+            return;
+        }
+
+        // Rewind the audio to the beginning and play the clicked audio
+        audioElement.currentTime = 0; // Rewind to the beginning
+        audioElement.play();
+        $(this).addClass('playing');
+        titleElement.css('color', '#FFA500');
+        playIcon.removeClass('fa-play').addClass('fa-pause');
+        currentAudio = audioElement; //  the currently playing audio
+        currentMediaId = $(this).data('media-id'); //  the currently playing media ID
+
+        // Store the currently playing media ID and title in localStorage
+        localStorage.setItem('currentMediaId', currentMediaId);
+        localStorage.setItem('currentTitle', titleElement.text());
+
+        // Update the displayed song name
+        $('.song-name h6').text(titleElement.text());
+    });
+
+    // Function to handle play/pause button click
+    $(document).on('click', '.play-icon .fa-play, .play-icon .fa-pause', function() {
+        var audioElement = $('.playing').next('.audio-wrapper').find('audio')[0];
+        var playIcon = $(this);
+        togglePlay(audioElement, playIcon);
+    });
+
+    // Function to handle previous audio playback
+    $(document).on('click', '.fa-step-backward', function() {
+        var currentAudio = $('.playing').next('.audio-wrapper').find('audio')[0];
+        var previousAudio = $('.playing').prevAll('.audio-wrapper').first().find('audio')[0];
+
+        // If there's no previous audio, play the last audio
+        if (!previousAudio) {
+            previousAudio = $('.audio-name').last().next('.audio-wrapper').find('audio')[0];
+        }
+
+        // If there's no currently playing audio, play the last audio
+        if (!currentAudio) {
+            currentAudio = $('.audio-name').last().next('.audio-wrapper').find('audio')[0];
+        }
+
+        if (previousAudio) {
+            currentAudio.pause();
+            currentAudio.currentTime = 0;
+            togglePlay(previousAudio, $('.play-icon .fa-play'));
+            $('.playing').removeClass('playing').find('h6').css('color', '#FFF');
+            $('.fa-step-backward').removeClass('highlighted');
+
+            var previousAudioName = $(previousAudio).parent().prev('.audio-name');
+            previousAudioName.addClass('playing').find('h6').css('color', '#FFA500');
+            $('.song-name h6').text(previousAudioName.find('h6').text());
+
+            localStorage.setItem('currentMediaId', previousAudioName.data('media-id'));
+            localStorage.setItem('currentTitle', previousAudioName.find('h6').text());
+        }
+    });
+
+    // Function to handle next audio playback
+    $(document).on('click', '.fa-step-forward', function() {
+        var currentIndex = $('.playing').index('.audio-name'); // Get the index of the currently playing audio
+        var nextAudio = null;
+
+        // Find the next unplayed audio
+        $('.audio-name').each(function(index) {
+            if (index > currentIndex && !$(this).hasClass('playing')) {
+                nextAudio = $(this).next('.audio-wrapper').find('audio')[0];
+                return false; // Break out of the loop once we find the next unplayed audio
+            }
+        });
+
+        // If there's no next unplayed audio, play the first audio
+        if (!nextAudio) {
+            nextAudio = $('.audio-name').first().next('.audio-wrapper').find('audio')[0];
+        }
+
+        if (nextAudio) {
+            var currentAudio = $('.playing').next('.audio-wrapper').find('audio')[0];
+            currentAudio.pause();
+            currentAudio.currentTime = 0;
+            togglePlay(nextAudio, $('.play-icon .fa-play'));
+            $('.playing').removeClass('playing').find('h6').css('color', '#FFF');
+            $('.fa-step-forward').removeClass('highlighted');
+
+            var nextAudioName = $(nextAudio).parent().prev('.audio-name');
+            nextAudioName.addClass('playing').find('h6').css('color', '#FFA500');
+            $('.song-name h6').text(nextAudioName.find('h6').text());
+
+            localStorage.setItem('currentMediaId', nextAudioName.data('media-id'));
+            localStorage.setItem('currentTitle', nextAudioName.find('h6').text());
+        } else {
+            console.log("No next unplayed audio available.");
+        }
+    });
+
+    $(document).on('ended', 'audio', function() {
+        $('.fa-step-forward').click();
+    });
+
+    // Toggle action menu visibility
+    $(document).on('click', '.fa-ellipsis-v', function(event) {
+        event.stopPropagation();
+        $('.media-action').not($(this).siblings('.media-action')).addClass('hidden');
+        $(this).siblings('.media-action').toggleClass('hidden');
+    });
+
+    // Hide action menu when clicking outside
+    $(document).on('click', function() {
+        $('.media-action').addClass('hidden');
+    });
+
+    // Hide action menu when clicking on a different audio
+    $(document).on('click', '.audio-name', function() {
+        $('.media-action').addClass('hidden');
+    });
+
+});
+
+</script>
 {% endblock body_data %}
